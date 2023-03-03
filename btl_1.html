@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <title>Module 1: Intro</title>
+    <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+    <script src  = "thuvien/TrackballControls.js"></script>
+    <script src  = "thuvien/OrbitControls.js"></script>
+    <script src  = "thuvien/OBJLoader.js"></script>
+    <script src  = "thuvien/MTLLoader.js"></script>
+
+
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 10000);
+        cam.position.set(0, 20, 110);
+        cam.lookAt(scene.position);
+
+
+        const scene1 = new THREE.Scene();
+        console.log(scene1);
+        const cam1 = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 10000);
+        cam1.position.set(100, 0, 100);
+        cam1.lookAt(scene1.position); 
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor("#202020", 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        renderer.shadowMapEnabled = true;
+
+        
+        let orbitControls1 = new THREE.OrbitControls(cam1, renderer.domElement);
+        //let orbitControls = new THREE.OrbitControls(cam, renderer.domElement);
+        let trackballControls = new THREE.TrackballControls(cam, renderer.domElement);
+        const textureLoader = new THREE.TextureLoader();
+
+
+        //NEN TROI
+        
+        let url_troi = "btl/sky4.jpg";
+        let texture_troi = textureLoader.load(url_troi);
+
+        let sphereGeom1 = new THREE.SphereGeometry(1000,500,500,0,2*Math.PI,0, Math.PI)
+        let sphereMat1 =  new THREE.MeshPhongMaterial({
+            map: texture_troi,
+            side:THREE.DoubleSide,
+            shadowSide:THREE.DoubleSide
+        });
+        let sphere1 = new THREE.Mesh(sphereGeom1, sphereMat1); 
+        scene.add(sphere1);
+        sphere1.position.set(0, -50, -200);
+
+      
+
+        //NEN DAT
+        let url_dat = "btl/grass2.jpg";
+        let texture_dat = textureLoader.load(url_dat);
+        let sphereGeom = new THREE.SphereGeometry(200,256*2,2*256,0,2*Math.PI,0, Math.PI)
+        let sphereMat =  new THREE.MeshStandardMaterial({
+            color: 0x33ff99,
+            side:THREE.FrontSide,
+            transparent: false,
+            metalness:0
+            //shadowSide:THREE.DoubleSide
+        });
+        let sphere = new THREE.Mesh(sphereGeom, sphereMat);
+        //sphere.rotateX(-Math.PI/2);
+        sphere.rotateZ(Math.PI/2);
+        sphere.scale.setX(0.1);
+        //sphere.scale.setZ(0.6);
+        scene.add(sphere);
+        sphere.position.set(0, -20, -100);
+        sphere.receiveShadow = true;
+
+
+
+        //NGOI NHA
+        const objLoader = new THREE.OBJLoader();
+        const mtlLoader = new THREE.MTLLoader();
+
+        mtlLoader.load("btl_model/house.mtl", function(mats){
+            mats.preload();
+            objLoader.setMaterials(mats);
+            objLoader.load("btl_model/house.obj", onLoad); 
+            function onLoad(mesh){
+                mesh.children.forEach(function(child){
+                    //child.material.side = 2;
+                    //mat.side = 2;
+                    child.material.side = THREE.DoubleSide;
+                })
+                mesh.traverse(function(node){
+                    if (node instanceof THREE.Mesh){
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
+                mesh.scale.setX(1.5);
+                mesh.scale.setY(1.5);
+                mesh.scale.setZ(1.5);
+                mesh.rotateY(Math.PI/6);
+                mesh.rotateZ(Math.PI/45)
+                mesh.position.set(-15,-14.5,40);
+                scene.add(mesh);
+            } 
+            objLoader.castShadow = true;   
+        });
+
+
+        //CAY
+        const objLoader_tree = new THREE.OBJLoader();
+        const mtlLoader_tree = new THREE.MTLLoader();
+
+        mtlLoader_tree.load("btl_model/tree6.mtl", function(mats){
+            mats.preload();
+            objLoader_tree.setMaterials(mats);
+            objLoader_tree.load("btl_model/tree6.obj", onLoad); 
+            function onLoad(mesh){
+                mesh.children.forEach(function(child){
+                    //child.material.side = 2;
+                    //mat.side = 2;
+                    child.material.side = THREE.DoubleSide;
+                })
+                mesh.traverse(function(node){
+                    if (node instanceof THREE.Mesh){
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
+                mesh.scale.setX(0.4);
+                mesh.scale.setY(0.18);
+                mesh.scale.setZ(0.25);
+                mesh.position.set(15,-3,-5);
+                scene.add(mesh);
+            } 
+            objLoader_tree.castShadow = true;   
+        });
+
+
+
+        const objLoader_tree1 = new THREE.OBJLoader();
+        const mtlLoader_tree1 = new THREE.MTLLoader();
+
+        mtlLoader_tree1.load("btl_model/cay1.mtl", function(mats){
+            mats.preload();
+            objLoader_tree1.setMaterials(mats);
+            objLoader_tree1.load("btl_model/cay1.obj", onLoad); 
+            function onLoad(mesh){
+                mesh.children.forEach(function(child){
+                    //child.material.side = 2;
+                    //mat.side = 2;
+                    child.material.side = THREE.DoubleSide;
+                })
+                mesh.traverse(function(node){
+                    if (node instanceof THREE.Mesh){
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
+                mesh.scale.setX(1.5);
+                mesh.scale.setY(1.5);
+                mesh.scale.setZ(1.5);
+                mesh.position.set(15,3,5);
+                //scene.add(mesh);
+            } 
+            objLoader_tree1.castShadow = true;   
+        });
+
+        //MAY
+        let cloud = new THREE.Mesh();
+        let cloud1 = new THREE.Mesh();
+        let cloud2 = new THREE.Mesh();
+        let cloud3 = new THREE.Mesh();
+        let cloud4 = new THREE.Mesh();
+        let cloud5 = new THREE.Mesh();
+        let cloud6 = new THREE.Mesh();
+        
+        const objLoader_maay = new THREE.OBJLoader();
+        const mtlLoader_maay = new THREE.MTLLoader();
+
+        mtlLoader_maay.load("btl_model/clould3.mtl", function(mats){
+            mats.preload();
+            objLoader_maay.setMaterials(mats);
+            objLoader_maay.load("btl_model/clould3.obj", onLoad); 
+            function onLoad(mesh){
+                mesh.children.forEach(function(child){
+                    //child.material.side = 2;
+                    //mat.side = 2;
+                    child.material.side = THREE.DoubleSide;
+                })
+                /* mesh.traverse(function(node){
+                    if (node instanceof THREE.Mesh){
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                }); */
+                cloud = mesh.children[0];
+                cloud1 = mesh.children[1];
+                cloud2 = mesh.children[2];
+                cloud3 = mesh.children[3];
+                cloud4 = mesh.children[4];
+                cloud5 = mesh.children[5];
+                cloud6 = mesh.children[6];
+                
+                mesh.scale.setX(1.5);
+                mesh.scale.setY(1.5);
+                mesh.scale.setZ(1.5);
+                mesh.position.set(-60,8,-15);
+                scene.add(mesh);
+            } 
+            //objLoader_maay.castShadow = true;   
+        });
+
+
+        //FULL HOUSE
+        //add a cube
+        let cubeGeom = new THREE.BoxGeometry(400, 160, 400);
+        let cubeColor = 0xffffff;
+        let cubeMat = new THREE.MeshBasicMaterial({color: cubeColor});
+        cubeMat = new THREE.MeshLambertMaterial({
+            side:THREE.DoubleSide,
+            shadowSide:THREE.DoubleSide
+        });
+
+        let cube = new THREE.Mesh(cubeGeom, cubeMat);
+        //cube.position.y = 3;
+        //cube.castShadow = true;
+        scene1.add(cube);
+        
+        const objLoader1 = new THREE.OBJLoader();
+        const mtlLoader1 = new THREE.MTLLoader();
+
+        mtlLoader1.load("btl_model/fullhouse3.mtl", function(mats){
+            mats.preload();
+            objLoader1.setMaterials(mats);
+            objLoader1.load("btl_model/fullhouse3.obj", onLoad); 
+            function onLoad(mesh){
+                mesh.children.forEach(function(child){
+                    //child.material = mat;
+                    //mat.side = 2;
+                    child.material.side = THREE.DoubleSide;
+                    child.material.shadowSide = THREE.DoubleSide;
+                })
+                //mesh.castShadow = true;
+                mesh.traverse(function(node){
+                    if (node instanceof THREE.Mesh){
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
+                mesh.rotateY(Math.PI/2)
+                scene1.add(mesh);
+                mesh.scale.setX(10);
+                mesh.scale.setY(10);
+                mesh.scale.setZ(10);
+                mesh.position.set(-182,-78,-69);
+            }  
+            //mats.children[2].material.map = texture_troi;  
+        });
+        //mtlLoader1.castShadow = true;
+
+
+        //DA
+        let sphereGeom_da = new THREE.SphereGeometry(4,5,5,0,2*Math.PI,0, Math.PI);
+        let sphereGeom_da1 = new THREE.SphereGeometry(6,6,6,0,2*Math.PI,0, Math.PI);
+        let sphereMat_da =  new THREE.MeshLambertMaterial({
+            color:"#a0a0a0", 
+            side:THREE.DoubleSide,
+            shadowSide:THREE.DoubleSide
+        });
+        let sphere_da = new THREE.Mesh(sphereGeom_da, sphereMat_da);
+        let sphere_da1 = new THREE.Mesh(sphereGeom_da1, sphereMat_da);
+        //sphere.rotateX(Math.PI/6);
+        //sphere.rotateX(Math.PI/3);
+        //sphere.scale.setY(0.3);
+        //sphere.scale.setZ(0.6);
+        scene.add(sphere_da);
+        sphere_da.position.set(-40, -4, 40);
+        sphere_da.castShadow = true;
+
+        scene.add(sphere_da1);
+        sphere_da1.position.set(40, 0, -30);
+        sphere_da1.scale.setY(0.7);
+        sphere_da1.castShadow = true;
+
+
+
+        //den chieu sang
+        const pointLight = new THREE.PointLight(0xffffff, 0.8);
+        pointLight.position.set(20, 100, 90);
+        pointLight.distance = 10000;
+        pointLight.castShadow = true;
+        scene.add(pointLight);
+
+        const pointLight_dark = new THREE.PointLight(0xffffff, 0.1);
+        pointLight_dark.distance = 10000;
+        pointLight_dark.position.set(20, 100, 100);
+
+        const pointLight1 = new THREE.PointLight(0xffffff, 0.5);
+        pointLight1.position.set(0, 0, 100);
+        pointLight1.distance = 10000;
+        pointLight1.castShadow = true;
+        scene1.add(pointLight1);
+
+        let spotColor = new THREE.Color();
+        let spotLight = new THREE.DirectionalLight(spotColor);
+        spotLight.position.set(-15,-14.5,40);
+        //spotLight.target = scene;
+        spotLight.castShadow = true;
+        //spotLight.rotateX(Math.PI);
+        //scene.add(spotLight);
+
+        let ambientLight = new THREE.AmbientLight("#888");
+        let ambientLight_dark = new THREE.AmbientLight("#66b2ff");
+        scene.add(ambientLight);
+        let ambientLight1 = new THREE.AmbientLight("#888");
+        scene1.add(ambientLight1);
+
+        let helper = new THREE.PointLightHelper(pointLight);
+        //scene.add(helper);
+
+        const light = new THREE.HemisphereLight(sphere1.material.map, 0x33ff99, 0.5 );
+        //light.position.set(0,70,0)
+        //scene.add( light );
+
+    
+        const gui = new dat.GUI();
+        let controls = new function(){
+            this.switchCamera = 0;
+
+            //Orbit
+            /* this.maxDistance = 6;
+            this.minDistance = 5;
+            this.maxAzimuthAngle = -Math.PI/30;
+            this.minAzimuthAngle = Math.PI/30;
+            this.maxPolarAngle = Math.PI;
+            this.minPolarAngle = 0; */
+
+            //Trackball
+            //this.rotateSpeed = 3.0;
+
+            this.display = 0;
+        }
+        gui.add(controls, "switchCamera", {"out":0, "in":1}).onChange(function(e){
+            switch (parseInt(e)){
+                case 0: 
+                    cam.position.set(0, 20, 110);
+                    //cam.lookAt(scene.position);
+                    break;
+                case 1: 
+                    cam.reset();
+                    cam = cam1;
+                    //cam.lookAt(scene1.position);
+                    break;
+            }
+        });
+        gui.add(controls, "display", {"bright":0, "dark":1}).setValue(0).onChange(function(e){
+            switch (parseInt(e)){
+                case 0:
+                    url_troi = textureLoader.load("btl/sky4.jpg");
+                    sphereMat1.map = url_troi;
+                    scene.remove(pointLight_dark);
+                    scene.remove(ambientLight_dark);
+                    scene.add(ambientLight);
+                    scene.add(pointLight); 
+                    break;
+                case 1: 
+                    url_troi = textureLoader.load("btl/star1.jpg");
+                    sphereMat1.map = url_troi;
+                    scene.remove(pointLight);
+                    scene.remove(ambientLight);
+                    scene.add(ambientLight_dark);
+                    scene.add(pointLight_dark);
+                    break;
+            }
+        });
+       
+        
+        
+        let alpha = 0.005;
+        const speed = 0.001;
+        const clock = new THREE.Clock();
+        let direction = 1;
+        function myRender(){
+            const delta = clock.getDelta();
+            orbitControls1.update(delta);
+            //orbitControls.update(delta);
+            //trackballControls.update(delta);
+            //for ( = -5; alpha < 5; alpha++){
+                //if(alpha<5 || alpha>-5){
+                    cloud.translateX(alpha);
+                    cloud1.translateX(alpha);
+                    cloud2.translateX(alpha);
+                    cloud3.translateX(alpha);
+                    cloud4.translateX(alpha);
+                    cloud5.translateX(alpha);
+                    cloud6.translateX(alpha);
+                //}
+                
+            //}
+            
+            
+
+
+
+            window.requestAnimationFrame(myRender);
+            if (controls.switchCamera == 0){
+                renderer.render(scene, cam);
+            }else{
+                renderer.render(scene1, cam1);
+            } 
+            //renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>

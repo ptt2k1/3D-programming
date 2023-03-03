@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <title>Module 1: Thuc hanh</title>
+ <script src = "thuvien/three.js"></script>
+ <script src = "thuvien/dat.gui.js"></script>
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+    //1. Declare a Scene, a Camera and a WebGLRenderer
+    const scene = new THREE.Scene();
+
+    const cam = new THREE.PerspectiveCamera(45, 
+    window.innerWidth/window.innerHeight, 0.1, 100); //tao camera
+    cam.position.set(0, 20, 40); //xac dinh toa do cua cam
+    cam.lookAt(scene.position); //diem nhin cua cam
+
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor("#000000", 1);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    scene.fog = new THREE.Fog("#CCffCC", 30,70);
+
+    //2. Do everything here
+    //mat phang
+    const planeGeom = new THREE.PlaneGeometry(30,100);
+    const planeMat = new THREE.MeshPhongMaterial({
+        color: "#00ff00"
+    });
+    const plane = new THREE.Mesh(planeGeom, planeMat)
+    scene.add(plane);
+    plane.rotateX(-Math.PI/2);
+    //plane.rotateZ(-Math.PI/2);
+
+    let axis = new THREE.AxesHelper(50);
+    scene.add(axis);
+
+
+    //den chieu
+    let pointLight = new THREE.PointLight("#cccccc",1,0);
+    pointLight.position.set(10,20,30);
+    scene.add(pointLight);
+    pointLight.target = scene.position;
+
+    let ambientLight = new THREE.AmbientLight("#444");
+    scene.add(ambientLight);
+
+    let gui = new dat.GUI();
+    let controls = new function(){
+        this.color = "#cccccc";
+        this.intensity = 1;
+        this.distance = 0;
+        this.activePointLight = true;
+        this.activeAmbientLight = true;
+        this.nObjects = scene.children.length;
+
+        this.addCube = function(){
+            const s = 4*Math.random();
+            const c = 0xffffff*Math.random();
+            const cubeGoem = new THREE.BoxGeometry(s,s,s);
+            const cubeMat = new THREE.MeshPhongMaterial({
+                color:c
+            });
+            const cube = new THREE.Mesh(cubeGoem, cubeMat);
+            scene.add(cube);
+
+            const x = plane.geometry.parameters.width*(1/2- Math.random());
+            const y = 4 + 10*Math.random();
+            const z = plane.geometry.parameters.height*(1/2- Math.random());
+            cube.position.set(x,y,z);
+            this.nObjects +=1;
+        }
+
+        this.removeCube = function(){
+            const n = scene.children.length;
+            if (n>4){
+                scene.remove(scene.children[n-1]);
+                this.nObjects -= 1
+            } 
+        }
+    }
+    gui.add(controls, "nObjects").listen();
+    gui.add(controls, "removeCube");
+    gui.add(controls, "addCube");
+    gui.add(controls, "activePointLight", true, false);
+    gui.add(controls, "activeAmbientLight", true, false);
+
+    const lightGui = gui.addFolder("Lights");
+    lightGui.addColor(controls, "color").onChange(function(e){
+        const c = new THREE.color(e);
+        pointLight.intensity = c;
+    })
+
+    lightGui.add(controls,"intensity",0,5).onChange(function(e){  
+        pointLight.intensity = e
+    })    
+    lightGui.add(controls,"distance").onChange(function(e){  
+        pointLight.distance = e
+    })
+
+    
+    //3.Render to the screen 
+    document.querySelector("#screen").appendChild(renderer.domElement);
+    function myRender(){
+            pointLight.visible = controls.activePointLight;
+            ambientLight.visible = controls.activeAmbientLight;
+            const speed = 0.05;
+            const d = -0.05;
+            scene.traverse(function(e){
+                if (e instanceof THREE.Mesh && e!=plane){
+                    //e.rotateX(speed);
+                    //e.rotateY(speed);
+                    //e.rotateZ(speed);
+                    //e.translateX(d);
+                    //e.translateY(d);
+                    e.translateZ(d);
+                }
+            });
+            window.requestAnimationFrame(myRender);
+            renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>

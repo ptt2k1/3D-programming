@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <title>Module 1: Intro</title>
+    <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_SharedWithUsers msdt:dt="string">MI4332-20221 Members</mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_SharedWithUsers>
+<mso:SharedWithUsers msdt:dt="string">7;#MI4332-20221 Members</mso:SharedWithUsers>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+        cam.position.set(0, 0, 50);
+        cam.position.y = 50;
+        cam.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor("#000000", 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        renderer.shadowMapEnabled = true;
+
+        //add a cube
+        let cubeGeom = new THREE.BoxGeometry(6, 6, 6);
+        let cubeColor = 0xea9b07;
+        let cubeMat = new THREE.MeshBasicMaterial({color: cubeColor});
+        cubeMat = new THREE.MeshLambertMaterial({color: cubeColor});
+
+        let cube = new THREE.Mesh(cubeGeom, cubeMat);
+        cube.position.set(0,3,0);
+        cube.castShadow = true;
+        scene.add(cube);
+
+
+        //add a plane
+        let planeGeom = new THREE.PlaneGeometry(20, 60, 1, 1);
+        let planeColor = "#ffffff";
+        let planeMat = new THREE.MeshLambertMaterial({color: planeColor});
+        let plane = new THREE.Mesh(planeGeom, planeMat);
+        plane.rotation.x = -Math.PI/2;
+        plane.rotation.z = -Math.PI/2;
+        plane.receiveShadow = true;
+        scene.add(plane);
+        plane.receiveShadow = true;
+
+
+
+        //add a sphere
+        let sphereGeom = new THREE.SphereGeometry(4, 20, 20);
+        let sphereMat = new THREE.MeshBasicMaterial({color: 0x00bb00});
+        sphereMat = new THREE.MeshLambertMaterial({color: 0x00bb00, wireframe: false});
+        let sphere = new THREE.Mesh(sphereGeom, sphereMat);
+        sphere.castShadow = true;
+        sphere.position.set(20,3,0)
+        //sphere.position.x = 15;
+        //sphere.position.y = 4;
+        scene.add(sphere);
+        sphere.castShadow = true;
+
+        //den chieu sang
+        const pointLight = new THREE.PointLight(0xffffff);
+        pointLight.position.set(0, 30, 10);
+        pointLight.castShadow = true;
+        scene.add(pointLight);
+
+        const LightSphereGeom = new THREE.SphereGeometry(0.3);
+        const LightSphereMat = new THREE.MeshBasicMaterial({color: 0xffffff});
+        const LightSphere = new THREE.Mesh(LightSphereGeom, LightSphereMat);
+        scene.add(LightSphere);
+        LightSphere.position.copy(pointLight.position);
+
+        let helper = new THREE.PointLightHelper(pointLight);
+        //scene.add(helper);
+
+
+        //giao dien
+        let controls = new function(){
+            this.positionX = sphere.position.x;
+            this.positionY = sphere.position.y;
+            this.positionZ = sphere.position.z; 
+
+            this.radius = 4;
+
+            this.cubeColor = cube.material.color;
+            this.rotateLight = true;
+        }
+        const gui = new dat.GUI();
+        gui.add(controls, "rotateLight", true, false);
+        gui.add(controls, "positionX", -50, 50);
+        gui.add(controls, "positionY", 2, 30);
+        gui.add(controls, "positionZ", -30, 30); 
+        gui.add(controls, "radius", 1, 50).onChange(function(e){
+            scene.remove(sphere);
+            sphereGeom = new THREE.SphereGeometry(e, 20, 20);
+            sphere = new THREE.Mesh(sphereGeom, sphereMat);
+            scene.add(sphere);
+        });
+
+        let cubeControls = gui.addFolder("Cube");
+        cubeControls.addColor(controls, "cubeColor").onChange(function(e){
+            const color = new THREE.Color(e);
+            cube.material.color = color;
+        })
+        
+        //ve hinh
+        let alpha = 0;
+        const step = 0.02;
+        const t = 0.05;
+        function myRender(){
+            if (controls.rotateLight){
+                alpha += step;
+                pointLight.position.x = 20*Math.cos(alpha);
+                pointLight.position.z = 20*Math.sin(alpha);
+                LightSphere.position.copy(pointLight.position);
+            }
+            sphere.position.x = 20*Math.cos(alpha);
+            sphere.position.y = 25 - (sphere.position.x*sphere.position.x)/20;
+           
+           // if (sphere.position.y > 5){         
+             //   sphere.position.x = 20*Math.cos(alpha);
+               // sphere.position.y = 20 - (sphere.position.x*sphere.position.x)/20;          
+            //}
+           
+
+
+           // sphere.position.x = controls.positionX;
+            //sphere.position.y = controls.positionY;
+            //sphere.position.z = controls.positionZ;
+            window.requestAnimationFrame(myRender);
+            renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>

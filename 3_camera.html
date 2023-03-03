@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+    <script src = "thuvien/three.js"></script>
+    <script src = "thuvien/dat.gui.js"></script>
+    <title> Camera </title>
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        window.addEventListener("resize", onResize, false);
+        function onResize(){
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            cam.aspect = window.innerWidth/window.innerHeight;
+            cam.updateProjectionMatrix();
+        }
+
+        const cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+        cam.position.set(0, 10, 50);
+        cam.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor("#ffffff");
+        renderer.shadowMapEnabled = true;
+
+        //let groundGeometry = new THREE.PlaneGeometry(120, 120, 12, 12);
+        //let groundMat =new THREE.MeshLambertMaterial({color: 0xffffff});
+        //let ground = new THREE.Mesh(groundGeometry, groundMat);
+        //ground.rotateX(-Math.PI/2);
+        //ground.position.set(0, 0, -30);
+        //scene.add(ground);
+        //ground.receiveShadow = true;
+
+
+
+
+
+        const cubeSize = 2;
+        let cubeGeom = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+        let cubeMat = new THREE.MeshPhongMaterial({color: "#ffffff"});
+        let cube = new THREE.Mesh(cubeGeom, cubeMat);
+        //scene.add(cube);
+        let nCubePerRow = 10;
+        for (let i =0; i<nCubePerRow; i++){
+            for (let j=0; j<nCubePerRow; j++){
+                const c = new THREE.Color(0xfffff*Math.random());
+                const newMat = new THREE.MeshPhongMaterial({color: c});
+                const newCube = new THREE.Mesh(cubeGeom, newMat);
+                scene.add(newCube);
+                newCube.position.set(4*(i-nCubePerRow)/2, 2, 4*(j-nCubePerRow)/2);
+            }
+        }
+
+        
+        //add the point light
+        let pointLight = new THREE.PointLight("#ffffff", 1, 0);
+        pointLight.position.set(10, 20, 30);
+        scene.add(pointLight);
+        pointLight.castShadow = true;
+
+        let gui = new dat.GUI();
+        let controls = new function(){
+            this.currentProjection = "Perspective";
+
+            this.camX = cam.position.x;
+            this.camY = cam.position.y;
+            this.camZ = cam.position.z;
+
+            this.resetCamera = function(){
+                cam.position.set(controls.camX, controls.camY, controls.camZ);
+            }
+        };
+        gui.add(controls,"camX", -100, 100).onChange(function(){
+            controls.resetCamera();
+        })
+        gui.add(controls,"camY", -100, 100).onChange(function(){
+            controls.resetCamera();
+        })
+        gui.add(controls,"camZ", -100, 100).onChange(function(){
+            controls.resetCamera();
+        })
+
+
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        function myRender(){
+            pointLight.visible = controls.activePointLight;
+            requestAnimationFrame(myRender);
+            renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>

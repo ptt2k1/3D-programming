@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <title>Module 1: Intro</title>
+    <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+    <script src  = "thuvien/TrackballControls.js"></script>
+    <script src  = "thuvien/OrbitControls.js"></script>
+    <script src  = "thuvien/OBJLoader.js"></script>
+    <script src  = "thuvien/MTLLoader.js"></script>
+
+
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 10000);
+        cam.position.set(30, 10, 100);
+        cam.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor("#202020", 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        //renderer.shadowMapEnabled = true;
+
+        let orbitControls = new THREE.OrbitControls(cam, renderer.domElement);
+        let trackballControls = new THREE.TrackballControls(cam, renderer.domElement);
+
+        const objLoader = new THREE.OBJLoader();
+
+        objLoader.load("btl_model/table.obj", onLoad);
+        let mat = new THREE.MeshNormalMaterial({});
+
+        let wing0 = new THREE.Mesh();
+        let wing1 = new THREE.Mesh();
+        let wing2 = new THREE.Mesh();
+        let wing3 = new THREE.Mesh();
+
+        function onLoad(mesh){
+            console.log(mesh);
+            mesh.children.forEach(function(child){
+                child.material = mat;
+                //mat.side = 2;
+                child.material.side = THREE.DoubleSide;
+            })
+
+            //wing0 = mesh.children[0];
+            //wing1.rotateZ(Math.PI/4);
+            //wing1 = mesh.children[1];
+            //wing2.rotateZ(Math.PI/4);
+            //wing2 = mesh.children[2];
+            //wing3.rotateZ(-Math.PI/4);
+            //wing3 = mesh.children[3];
+            //wing4.rotateZ(-Math.PI/4);
+
+
+
+            scene.add(mesh);
+            //mesh.scale.set(100,100,100);
+        }
+
+
+
+        //den chieu sang
+        const pointLight = new THREE.PointLight(0xffffff, 2);
+        pointLight.position.set(0, 20, 0);
+        //pointLight.castShadow = true;
+        scene.add(pointLight);
+
+        let ambientLight = new THREE.AmbientLight("#888");
+        //scene.add(ambientLight);
+
+        let helper = new THREE.PointLightHelper(pointLight);
+        //scene.add(helper);
+
+    
+        const gui = new dat.GUI();
+       
+        
+        
+
+        //ve hinh
+        const lowerAngle = Math.PI/6;
+        const upperAngle = Math.PI/3;
+
+        let curAngle = Math.PI/6;
+
+       // let alpha = 0;
+        const speed = 0.001;
+        const clock = new THREE.Clock();
+        let direction = 1;
+        function myRender(){
+             const delta = clock.getDelta();
+            orbitControls.update(delta);
+            //wing1.rotateZ(Math.PI/4);
+/* 
+            if (curAngle < upperAngle){
+                curAngle -=speed +0.1*Math.random();
+            } else {
+                curAngle +=speed + 0.1*Math.random();
+            }
+            wing1.rotation.z = curAngle; */
+
+
+            if (curAngle >upperAngle || curAngle<lowerAngle) direction = -direction;
+            curAngle += speed * direction;
+            wing0.rotation.z = curAngle +Math.random()/10;
+            wing1.rotation.z = curAngle +Math.random()/10;
+            wing2.rotation.z = -curAngle +Math.random()/10;
+            wing3.rotation.z = -curAngle +Math.random()/10;
+
+
+
+            window.requestAnimationFrame(myRender);
+            renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>

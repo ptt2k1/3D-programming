@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <title>Module 7: Normal Material</title>
+    <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+        cam.position.set(0, 50, 50);
+        cam.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor("#000000", 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        //renderer.shadowMapEnabled = true;
+
+
+        /* let pointLight = new THREE.PointLight(0xffffff);
+        pointLight.position.set(25,10,10);
+        scene.add(pointLight);
+        const ambient = new THREE.AmbientLight(444444);
+        scene.add(ambient); */
+
+      
+
+        let controls = new function(){
+            this.id = "";
+            this.name = "";
+            this.transparent = false;
+            this.opacity = 0.5;
+            this.visible = true;
+            this.wireframe = false;
+
+            this.arrowLength = 3;
+            this.arrowColor = 0x333fff;
+            
+            this.mesh = "Cube";
+        }
+        let gui = new dat.GUI();
+        let dropList = gui.add(controls, "mesh", {"Cube":0, "Sphere":1});
+        dropList.setValue(0);
+        dropList.onChange(function(e){
+            if (e==0){
+                scene.remove(sphere);
+                scene.add(cube);
+                selectedMesh = cube;
+            } else {
+                scene.remove(cube);
+                scene.add(sphere);
+                selectedMesh = sphere;
+            };
+        });
+
+        gui.add(controls, "id").listen();
+        gui.add(controls, "name").listen();
+        gui.add(controls, "transparent", true, false).onChange(function(e){
+            mat.transparent = e
+        });
+        gui.add(controls, "opacity",0,1).onChange(function(e){
+            mat.opacity = e
+        });
+        gui.add(controls, "visible",true,false).onChange(function(e){
+            mat.visible = e
+        });
+
+        let normalMatControl = gui.addFolder("arrow");
+        normalMatControl.add(controls, "arrowLength",0,100).onChange(function(e){
+            scene.traverse(function(child){
+                if (child instanceof  THREE.ArrowHelper)
+                    child.setLength(e);
+            });
+        });
+        normalMatControl.addColor(controls, "arrowColor").onChange(function(e){
+            scene.traverse(function(child){
+                if (child instanceof  THREE.ArrowHelper)
+                    child.setColor(new THREE.Color(e));
+            });
+        });
+        /* normalMatControl.add(controls, "showNormal",true,false).onChange(function(e){
+            mat.showNormal = e;
+        }); */
+    
+        let mat = new THREE.MeshNormalMaterial({
+            name:"Normal Material",
+            transparent: controls.transparent,
+            opacity: controls.opacity,
+            visible: controls.visible,
+        });
+        controls.id = mat.id;
+        controls.name = mat.name;
+
+        function createArrow(m){
+            for (let f = 0; f < m.geometry.faces.length; f++){
+                const face = m.geometry.faces[f];
+                const centroid = new THREE.Vector3(0, 0, 0);
+                centroid.add(m.geometry.vertices[face.a]);
+                centroid.add(m.geometry.vertices[face.b]);
+                centroid.add(m.geometry.vertices[face.c]);
+                centroid.divideScalar(3);
+                const arrow = new THREE.ArrowHelper(face.normal, centroid, controls.arrowLength, controls.arrowColor);
+                m.add(arrow); //add to the m
+                arrow.visible = controls.showNormal;
+                //scene.add(arrow); //sth wrong with remove 
+            }
+        }
+        //add a cube
+        const s = 12
+        let cubeGeom = new THREE.BoxGeometry(s, s, s);
+        let cube = new THREE.Mesh(cubeGeom, mat);
+        scene.add(cube);
+        createArrow(cube);
+
+
+
+        let selectedMesh = cube;
+        let geomSphere = new THREE.IcosahedronGeometry(4,2);
+        let sphere = new THREE.Mesh(geomSphere, mat);
+        createArrow(sphere);
+
+        /* let nCubePerRow = 3;
+        for ( let i =0; i< nCubePerRow; i++){
+        for (let j = 0; j <nCubePerRow; j++){
+            //const c = new THREE.Color(0xffffff*Math.random());
+            //const newMat = new THREE.MeshPhongMaterial({color:c});
+            let newSphere = new THREE.Mesh(geomSphere,mat);        
+            newSphere.position.set( 25*(i-nCubePerRow/2),-5,25*(j-nCubePerRow/2));
+            scene.add(newSphere);
+            createArrow(newSphere);
+        }
+        }   */
+       
+
+
+
+        
+        const speed = 0.01;
+        let alpha = 0;
+        const step = 0.01;
+        function myRender(){
+            cube.rotateX(speed);
+            cube.rotateY(speed);
+            cube.rotateZ(speed); 
+
+            sphere.rotateX(speed);
+            sphere.rotateY(speed);
+            sphere.rotateZ(speed); 
+ 
+            alpha += step;
+            /* sphere1.position.x = 15*Math.cos(alpha);
+            sphere1.position.z = 15*Math.sin(alpha);  */
+
+            window.requestAnimationFrame(myRender);
+            renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>

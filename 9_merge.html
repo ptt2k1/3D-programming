@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <title>Module 1: Intro</title>
+    <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+    <script src  = "thuvien/TrackballControls.js"></script>
+    <script src  = "thuvien/OrbitControls.js"></script>
+    <script src  = "thuvien/OBJLoader.js"></script>
+    <script src  = "thuvien/MTLLoader.js"></script>
+
+
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 10000);
+        cam.position.set(30, 10, 100);
+        cam.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor("#202020", 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        //renderer.shadowMapEnabled = true;
+
+        let orbitControls = new THREE.OrbitControls(cam, renderer.domElement);
+        let trackballControls = new THREE.TrackballControls(cam, renderer.domElement);
+
+        //const objLoader = new THREE.OBJLoader();
+
+        //objLoader.load("butterfly.obj", onLoad);
+        /* const mat = new THREE.MeshNormalMaterial();
+        function onLoad(mesh){
+            console.log(mesh);
+            mesh.children.forEach(function(child){
+                child.material = mat;
+            })
+            scene.add(mesh);
+        } */
+
+
+
+        let cylinderGeom = new THREE.CylinderGeometry(2, 10, 10);
+        let cylinderMat = new THREE.MeshNormalMaterial({color: 0x00bb00});
+        let cylinder = new THREE.Mesh(cylinderGeom, cylinderMat);
+        cylinder.position.set(10, 0, 0);
+
+        
+        const s=6;
+        let cubeGeom = new THREE.BoxGeometry(s, s, s);
+        let cubeMat = new THREE.MeshNormalMaterial({color: 0x00bb00});
+        let cube = new THREE.Mesh(cubeGeom, cubeMat);
+        cube.position.set(-10, 0, 0);
+
+        const group = new THREE.Group();
+        //group.add(cube);
+       // group.add(cylinder);
+        //scene.add(group);
+
+
+        //den chieu sang
+        const pointLight = new THREE.PointLight(0xffffff, 2);
+        pointLight.position.set(0, 20, 0);
+        //pointLight.castShadow = true;
+        scene.add(pointLight);
+
+        let ambientLight = new THREE.AmbientLight("#888");
+        //scene.add(ambientLight);
+
+        let helper = new THREE.PointLightHelper(pointLight);
+        //scene.add(helper);
+
+      
+
+        //giao dien
+        let controls = new function(){
+            this.rotate = false; //rieng le 2 obj
+            this.rotateGroup = false;
+            this.group = true;
+            this.nCubes = 10;
+            let geom = new THREE.Geometry();
+            this.addCube = function(){
+                let cube = new THREE.Mesh(cubeGeom, cubeMat);
+                cube.position.set(200*(1-2*Math.random()), 200*(1-2*Math.random()),200*(1-2*Math.random()));
+                cube.updateMatrix();
+                geom.merge(cube.geometry, cube.matrix);
+                cube = new THREE.Mesh(geom, cubeMat)
+                //group.add(cube);
+            }
+            //scene.add(new THREE.Mesh(cubeGeom, cubeMat));
+
+            this.redraw = function(){
+                scene.traverse(function(e){
+                    if (e instanceof THREE.Mesh){scene.remove(e)}
+                })
+                console.log(controls.nCubes);
+
+                //let geometry = new THREE.Geometry();
+
+                for (let i = 0; i < controls.nCubes; i++){
+                    //controls.addCube();
+                    let cube = this.addCube();
+                    //cube.updateMatrix();
+                    //geometry.merge(cube.geometry, cube.matrix);
+                    scene.add(cube);
+                }
+                scene.add(cube);
+                console.log(scene.children.length);
+            }
+            //scene.add(new THREE.Mesh(cubeGeom, cubeMat));
+        }
+        const gui = new dat.GUI();
+        gui.add(controls, "rotate", true, false).onChange(function(e){
+            controls.rotate = e;
+        });
+        gui.add(controls, "rotateGroup", true, false).onChange(function(e){
+            controls.rotateGroup = e;
+        });
+        gui.add(controls, "group", true, false).onChange(function(e){
+            controls.group = e;
+        })
+        gui.add(controls, "nCubes", 1, 20000);
+        gui.add(controls, "redraw");
+        
+        console.log(group);
+
+       
+        
+        //ve hinh
+        let alpha = 0;
+        const step = 0.01;
+        const clock = new THREE.Clock();
+
+        function myRender(){
+             const delta = clock.getDelta();
+            orbitControls.update(delta);
+ 
+
+            if (controls.rotate){
+                cube.rotateY(0.01);
+                cylinder.rotateY(0.01);
+            } 
+
+            if (controls.rotateGroup){
+                group.rotateY(0.01);
+            }
+
+        /*     if (controls.group == false){
+                group.remove(cube);
+                group.remove(cylinder);
+                scene.add(cube);
+                scene.add(cylinder);
+            } else {
+                group.add(cube);
+                group.add(cylinder);
+            }
+ */
+
+
+            window.requestAnimationFrame(myRender);
+            renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>

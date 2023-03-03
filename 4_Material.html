@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <title>Module 7: Material</title>
+    <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_SharedWithUsers msdt:dt="string">MI4332-20221 Members</mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_SharedWithUsers>
+<mso:SharedWithUsers msdt:dt="string">7;#MI4332-20221 Members</mso:SharedWithUsers>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+        cam.position.set(0, 95, 100);
+        cam.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor("#000000", 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        renderer.shadowMapEnabled = true;
+
+
+        let pointLight = new THREE.PointLight(0xffffff);
+        pointLight.position.set(25,10,10);
+        scene.add(pointLight);
+        const ambient = new THREE.AmbientLight(444444);
+        scene.add(ambient);
+
+        let controls = new function(){
+            this.color = 0xffffff;
+            this.id = "";
+            this.name = "";
+            this.transparent = false;
+            this.opacity = 0.5;
+            this.colorWrite = true;
+            this.visible = true;
+            this.vertexColors = false;
+            this.wireframe = false;
+            this.emissive = 0x000000;
+            this.pointLightColor = 0x000000;
+            this.flatShading = false;
+            this.specular = 0xffffff;
+            this.shininess = 1;
+            
+            this.mesh = "Cube";
+        }
+        let gui = new dat.GUI();
+        let dropList = gui.add(controls, "mesh", {"Cube":0, "Sphere":1});
+        dropList.setValue(0);
+        dropList.onChange(function(e){
+            if (e==0){
+                scene.remove(sphere);
+                scene.add(cube);
+                selectedMesh = cube;
+            } else {
+                scene.remove(cube);
+                scene.add(sphere);
+                selectedMesh = sphere;
+            }
+        })
+
+        gui.addColor(controls, "color").onChange(function(e){
+            mat.color = new THREE.Color(e)
+        });
+        gui.add(controls, "id").listen();
+        gui.add(controls, "name").listen();
+        gui.add(controls, "transparent", true, false).onChange(function(e){
+            mat.transparent = e
+        });
+        gui.add(controls, "opacity",0,1).onChange(function(e){
+            mat.opacity = e
+        });
+        gui.add(controls, "colorWrite",true,false).onChange(function(e){
+            mat.colorWrite = e
+        });
+        gui.add(controls, "visible",true,false).onChange(function(e){
+            mat.visible = e
+        });
+        gui.add(controls, "vertexColors",true,false).onChange(function(e){
+            mat.vertexColors = e;
+            mat.needsUpdate = true;
+        });
+        gui.add(controls, "wireframe", true, false).onChange(function(e){
+            mat.wireframe = e
+        });
+        gui.addColor(controls, "emissive").onChange(function(e){
+            mat.emissive = new THREE.Color(e);
+        })
+        gui.addColor(controls, "pointLightColor").onChange(function(e){
+            mat.pointLightColor = new THREE.Color(e);
+        });
+        gui.add(controls, "flatShading",true,false).onChange(function(e){
+            mat.flatShading = e;
+            mat.needsUpdate = true;
+        });
+        gui.addColor(controls, "specular").onChange(function(e){
+            mat.specular = new THREE.Color(e);
+        });
+        gui.add(controls, "shininess",0,200).onChange(function(e){
+            mat.shininess = e
+        });
+
+        //add a cube
+        const s = 12
+        let cubeGeom = new THREE.BoxGeometry(s, s, s);
+        let mat = new THREE.MeshPhongMaterial({
+            color: controls.color,
+            //id:"",
+            name:"Phong Material",
+            transparent: controls.transparent,
+            opacity: controls.opacity,
+            colorWrite: controls.colorWrite,
+            visible: controls.visible,
+            vertexColors: controls.vertexColors,
+            wireframe: controls.wireframe,
+            emissive: controls.emissive,
+            flatShading: controls.flatShading,
+            specular: controls.specular,
+            shininess: controls.shininess
+        });
+        controls.id = mat.id;
+        controls.name = mat.name;
+
+        let cube = new THREE.Mesh(cubeGeom, mat);
+        //scene.add(cube);
+
+
+        let selectedMesh = cube;
+        let geomSphere = new THREE.IcosahedronGeometry(6,2);
+        let sphere = new THREE.Mesh(geomSphere, mat);
+        
+        let nCubePerRow = 4;
+        for ( let i =0; i< nCubePerRow; i++){
+        for (let j = 0; j <nCubePerRow; j++){
+            //const c = new THREE.Color(0xffffff*Math.random());
+            //const newMat = new THREE.MeshPhongMaterial({color:c});
+            const newSphere = new THREE.Mesh(geomSphere,mat);        
+            newSphere.position.set( 25*(i-nCubePerRow/2),-10,20*(j-nCubePerRow/2));
+            scene.add(newSphere);
+        }
+        }
+
+        /* let sphereGeom = new THREE.SphereGeometry(3,20,20);
+        let sphereMat = new THREE.MeshBasicMaterial({color: 0x00bb00});
+        let sphere1 = new THREE.Mesh(sphereGeom, sphereMat);
+        sphere1.position.set(20,-10,0);
+        scene.add(sphere1);  */
+
+        const ratio = 1.005;
+        const wireframeSphere = new THREE.Mesh(geomSphere, new THREE.MeshBasicMaterial({color:0x000000, wireframe: true}));
+        wireframeSphere.scale.set(ratio,ratio,ratio);
+        //sphere.add(wireframeSphere);
+
+        const wireframeCube = new THREE.Mesh(cubeGeom, new THREE.MeshBasicMaterial({color:0x000000, wireframe: true}));
+        wireframeCube.scale.set(ratio,ratio,ratio);
+        //cube.add(wireframeCube); 
+
+        //console.log(sphere);
+        
+        geomSphere.faces.forEach(function(currentFace, idx){
+            //currentFace.color = new THREE.Color(0xffffff*Math.random());
+
+            currentFace.color = (new THREE.Color()).setHSL(idx/12,0.5,0.5);
+
+           /*  currentFace.vertexColors[0] = new THREE.Color(0xffffff*Math.random());
+            currentFace.vertexColors[1] = new THREE.Color(0xffffff*Math.random());
+            currentFace.vertexColors[2] = new THREE.Color(0xffffff*Math.random()); */
+        });
+
+        cubeGeom.faces.forEach(function(currentFace){
+            //currentFace.color = new THREE.Color("red");
+
+            currentFace.vertexColors[0] = new THREE.Color("red");
+            currentFace.vertexColors[1] = new THREE.Color(0xffffff*Math.random());
+            currentFace.vertexColors[2] = new THREE.Color(0xffffff*Math.random()); 
+        });
+
+
+        
+        const speed = 0.01;
+        let alpha = 0;
+        const step = 0.01;
+        function myRender(){
+            cube.rotateX(speed);
+            cube.rotateY(speed);
+            cube.rotateZ(speed); 
+
+            sphere.rotateX(speed);
+            sphere.rotateY(speed);
+            sphere.rotateZ(speed);
+
+            alpha += step;
+            /* sphere1.position.x = 15*Math.cos(alpha);
+            sphere1.position.z = 15*Math.sin(alpha);  */
+
+            window.requestAnimationFrame(myRender);
+            renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>

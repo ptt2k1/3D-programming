@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <title>Module 1: Intro</title>
+ <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+    //1. Declare a Scene, a Camera and a WebGLRenderer
+    let scene = new THREE.Scene();
+    let cam = new THREE.PerspectiveCamera(45, 
+    window.innerWidth/window.innerHeight, 0.1, 100);
+    cam.position.set(0, 0, 80);
+    cam.lookAt(scene.position);
+    let renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor("#A0A0A0");
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+
+    //2. Do everything here
+    const pointLight = new THREE.PointLight(0xffffff);
+        pointLight.position.set(10, 0, 50);
+        pointLight.castShadow = true;
+        scene.add(pointLight);
+
+    const backgroundGoem = new THREE.PlaneGeometry(200,120,1,1);
+    const backgroundMat = new THREE.MeshLambertMaterial({
+        color: "#bbb"
+    });
+    const background = new THREE.Mesh(backgroundGoem, backgroundMat);
+    scene.add(background);
+    background.position.z = -20;
+    background.receiveShadow = true;
+
+    let planeGeom = new THREE.PlaneGeometry(20,20,1,1);
+    let planeMat = new THREE.MeshPhongMaterial({
+        color:"#de0eb5",
+        wireframe: false,
+        side: THREE.DoubleSide,
+        shadowSide: THREE.DoubleSide
+    });
+    let plane = new THREE.Mesh(planeGeom,planeMat);
+    scene.add(plane);
+    plane.castShadow = true;
+    plane.rotateY(Math.PI/6);
+
+    let controls = new function(){
+            this.rotate = false;
+            this.wireframe = false;
+            this.castshadow = false;
+
+            this.width = plane.geometry.parameters.width;
+            this.height = plane.geometry.parameters.height;
+            this.widthSegments = plane.geometry.parameters.widthSegments;
+            this.heightSegments = plane.geometry.parameters.heightSegments;
+
+            this.redraw = function(){
+                scene.remove(plane);
+                planeGeom = new THREE.PlaneGeometry(controls.width, controls.height, controls.widthSegments, controls.heightSegments);
+                plane = new THREE.Mesh(planeGeom, planeMat);
+                scene.add(plane)
+            }
+            this.side = 2;
+            this.shadowSide =2;
+        }
+        const gui = new dat.GUI();
+        gui.add(controls, "side", {"Front": 0, "Back":1, "Double":2}).onChange(function(e){
+            plane.material.side = parseInt(e);
+        });
+        gui.add(controls, "shadowSide", {"Front": 0, "Back":1, "Double":2}).onChange(function(e){
+            plane.material.shadowSide = parseInt(e);
+        });
+        gui.add(controls, "width", 0.1, 100).onChange(function(){controls.redraw()});
+        gui.add(controls, "height", 0.1, 100).onChange(function(){controls.redraw()});
+        gui.add(controls, "widthSegments", 0.1, 100).step(1).onChange(function(){controls.redraw()});
+        gui.add(controls, "heightSegments", 0.1, 100).step(1).onChange(function(){controls.redraw()});
+        gui.add(controls, "rotate", true, false);
+        gui.add(controls, "wireframe", true, false).onChange(function(e){
+            plane.material.wireframe = e;
+        });
+
+        gui.add(controls, "castshadow", true, false).onChange(function(e){
+            plane.castShadow = e;
+        });
+
+    
+    //3.Render to the screen 
+    document.querySelector("#screen").appendChild(renderer.domElement);
+    const speed = 0.01;
+    function myRender(){
+            if (controls.rotate){
+                    plane.rotateX(speed);
+                    plane.rotateY(speed);
+                    plane.rotateZ(speed);
+                }
+            window.requestAnimationFrame(myRender);
+            renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>

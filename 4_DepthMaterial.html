@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <title>Module 7: Normal Material</title>
+    <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        let cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+        cam.position.set(100, 50, 100);
+        cam.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor("#000000", 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        renderer.shadowMapEnabled = true;
+
+
+        /* let pointLight = new THREE.PointLight(0xffffff);
+        pointLight.position.set(25,10,10);
+        scene.add(pointLight);
+        const ambient = new THREE.AmbientLight(444444);
+        scene.add(ambient); */
+
+        //let geomSphere = new THREE.IcosahedronGeometry(4,2);
+        //let sphere = new THREE.Mesh(geomSphere, mat);
+        /* let nCubePerRow = 7;
+        for ( let i =0; i< nCubePerRow; i++){
+        for (let j = 0; j <nCubePerRow; j++){
+            const c = new THREE.Color(0xffffff*Math.random());
+            const newMat = new THREE.MeshBasicMaterial({color:c});
+            const newSphere = new THREE.Mesh(geomSphere,newMat);        
+            newSphere.position.set( 15*(i-nCubePerRow/2),-4,15*(j-nCubePerRow/2));
+            scene.add(newSphere);
+        }
+        }   */
+
+        let controls = new function(){
+            this.id = "";
+            this.name = "";
+            this.camNear = cam.near;
+            this.camFar = cam.far; 
+            
+        }
+        let gui = new dat.GUI();
+
+        gui.add(controls, "id").listen();
+        gui.add(controls, "name").listen();
+        gui.add(controls, 'camNear', 0, 150).onChange(function (e) {
+            cam.near = e;
+            cam.updateProjectionMatrix();
+        });
+        gui.add(controls, 'camFar', 150, 300).onChange(function (e) {
+            cam.far = e;
+            cam.updateProjectionMatrix();
+        });
+    
+        let mat = new THREE.MeshBasicMaterial({
+            name:"Depth Material"
+        });
+        controls.id = mat.id;
+        controls.name = mat.name;
+
+        let axis = new THREE.AxesHelper(100);
+        scene.add(axis);
+
+        let geomSphere = new THREE.IcosahedronGeometry(4,2);
+        let nCubePerRow = 7;
+        for ( let i =0; i< nCubePerRow; i++){
+        for (let j = 0; j <nCubePerRow; j++){
+            const newSphere = new THREE.Mesh(geomSphere,mat);        
+            newSphere.position.set( 15*(i-nCubePerRow/2),-4,15*(j-nCubePerRow/2));
+            scene.add(newSphere);
+        }
+        }  
+
+        function myRender(){
+            window.requestAnimationFrame(myRender);
+            renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>

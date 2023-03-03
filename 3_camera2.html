@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <title>Module 5: Camera</title>
+    <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+    <script src  = "thuvien/TrackballControls.js"></script>
+    <script src  = "thuvien/OrbitControls.js"></script>
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_SharedWithUsers msdt:dt="string">MI4332-20221 Members</mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_SharedWithUsers>
+<mso:SharedWithUsers msdt:dt="string">7;#MI4332-20221 Members</mso:SharedWithUsers>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        let cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+        cam.position.set(0, 10, 50);
+        //cam.position.y = 50;
+        cam.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor("#ffffff", 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        renderer.shadowMapEnabled = true;
+
+        //add a cube
+        let cubeGeom = new THREE.BoxGeometry(2, 2, 2);
+        let cubeColor = 0xffffff;
+        let cubeMat = new THREE.MeshBasicMaterial({color: cubeColor});
+        cubeMat = new THREE.MeshLambertMaterial({color: cubeColor});
+
+        let cube = new THREE.Mesh(cubeGeom, cubeMat);
+        cube.position.y = 3;
+        cube.castShadow = true;
+        //scene.add(cube);
+
+
+        //add a plane
+        let planeGeom = new THREE.PlaneGeometry(20, 100, 1, 1);
+        let planeColor = 0x565353;
+        let planeMat = new THREE.MeshPhongMaterial({color: planeColor});
+        let plane = new THREE.Mesh(planeGeom, planeMat);
+        plane.rotation.x = -Math.PI/2;
+        plane.rotation.z = -Math.PI/2;
+        plane.receiveShadow = true;
+       // scene.add(plane);
+        plane.receiveShadow = true;
+
+        //add a sphere
+       let nCubePerRow = 10;
+       for ( let i =0; i< nCubePerRow; i++){
+        for (let j = 0; j <nCubePerRow; j++){
+            const c = new THREE.Color(0xffffff*Math.random());
+            const newMat = new THREE.MeshPhongMaterial({color:c});
+            const newCube = new THREE.Mesh(cubeGeom,newMat);
+            //scene.add(newCube);
+            newCube.position.set( 4*(i-nCubePerRow/2),2,6*(j-nCubePerRow/2) );
+        }
+       }
+
+       //add a sphere
+        let sphereGeom = new THREE.SphereGeometry(4, 20, 20);
+        /* let sphereMat = new THREE.MeshBasicMaterial({color: 0x00bb00});
+        sphereMat = new THREE.MeshLambertMaterial({color: 0x00bb00, wireframe: false});
+        let sphere = new THREE.Mesh(sphereGeom, sphereMat);
+        sphere.castShadow = true;
+        sphere.position.set(20,3,0)
+        //sphere.position.x = 15;
+        //sphere.position.y = 4;
+        scene.add(sphere);
+        sphere.castShadow = true; */
+
+        
+       for ( let i =0; i< 200; i++){
+            //const c = new THREE.Color(0xffffff*Math.random());
+            const newSphereMat = new THREE.MeshPhongMaterial({color: 0xde1599*Math.random()});
+            let newSphere = new THREE.Mesh(sphereGeom,newSphereMat);
+            newSphere.position.set(200*(1-2*Math.random()),200*(1-2*Math.random()),200*(1-2*Math.random()));
+            scene.add(newSphere);
+       }
+
+
+
+        let pointLight = new THREE.PointLight(0xcccccc,1,0);
+        pointLight.position.set(10, 20, 30);
+        pointLight.target = scene.position;
+        pointLight.castShadow = true;
+        pointLight.castShadow = true;
+        //scene.add(pointLight);
+        
+        let ambientLight = new THREE.AmbientLight("#888");
+        scene.add(ambientLight);
+                let helper = new THREE.PointLightHelper(pointLight);
+        //scene.add(helper);
+        let axis = new THREE.AxesHelper(100);
+        scene.add(axis);
+
+        const lightSphereGeom = new THREE.SphereGeometry(0.3);
+        const lightSphereMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff
+        });
+        const lightSphere = new THREE.Mesh(lightSphereGeom,lightSphereMat);
+        //scene.add(lightSphere);
+        lightSphere.position.copy(pointLight.position);        //giao dien 
+
+
+
+        let orbitControls = new THREE.OrbitControls(cam, renderer.domElement);
+
+
+
+        let controls = new function(){
+            //this.currentProjection = "Perspective";
+            this.switchCamera = function() {
+                if (cam instanceof THREE.PerspectiveCamera){
+                    cam = new THREE.OrthographicCamera(-innerWidth/10,innerWidth/10,innerHeight/10,-innerHeight/10,0.1,1000);
+                        controls.currentCamera = "Orthographic"; 
+                }else{
+                    cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+                }
+            }
+            this.currentCamera = "Perspactive";
+            this.fov = cam.fov;
+            this.aspect = cam.aspect;
+            this.near = cam.near;
+            this.far = cam.far;
+            this.camX = cam.position.x;
+            this.camY = cam.position.y;
+            this.camZ = cam.position.z;
+            this.resetCamera = function(){
+                cam.position.set(controls.camX,controls.camY,controls.camZ);
+                cam.lookAt(scene.position);
+            }  
+            this.autoRotate = 1.0;
+            this.autoRotateSpeed = 2.0;
+            this.enabled = false;
+            this.maxDistance = 10.0;
+            this.minDistance = 5.0;
+            
+            this.maxAzimuthAngle = Infinity;
+            this.minAzimuthAngle = Infinity;
+
+            this.maxPolarAngle = Math.PI;
+            this.minPolarAngle = 0;
+
+            this.enableDamping = false;
+            this.dampingFactor = 0.2;
+            }
+    const gui = new dat.GUI();
+    gui.add(controls, "autoRotate", 0, 10).onChange(function(e){
+        orbitControls.autoRotateSpeed = e;
+    });
+    gui.add(controls, "autoRotateSpeed", 0, 10).onChange(function(e){
+        orbitControls.autoRotateSpeed = e;
+    });
+    gui.add(controls, "maxDistance", 1, 100).onChange(function(e){
+        orbitControls.maxDistance = e;
+    });
+    gui.add(controls, "minDistance", 1, 50).onChange(function(e){
+        orbitControls.minDistance = e;
+    });
+    gui.add(controls, "enabled", true, false).onChange(function(e){
+        orbitControls.enabled = e;
+    });
+    gui.add(controls, "maxAzimuthAngle", 0, 2*Math.PI).onChange(function(e){
+        orbitControls.maxAzimuthAngle = e;
+    });
+    gui.add(controls, "minAzimuthAngle", 0, 2*Math.PI).onChange(function(e){
+        orbitControls.minAzimuthAngle = e;
+    });
+    gui.add(controls, "maxPolarAngle", 0, Math.PI).onChange(function(e){
+        orbitControls.maxPolarAngle = e;
+    });
+    gui.add(controls, "minPolarAngle", 0, Math.PI).onChange(function(e){
+        orbitControls.minPolarAngle = e;
+    });
+    gui.add(controls, "enableDamping", true, false).onChange(function(e){
+        orbitControls.enableDamping = e;
+    });
+    gui.add(controls, "dampingFactor", 0, 2.0).onChange(function(e){
+        orbitControls.dampingFactor = e;
+    }); 
+    /* gui.add(controls,"switchCamera");
+    gui.add(controls, "currentCamera").listen();
+    gui.add(controls,"camX",-100,100).onChange(function(){
+        controls.resetCamera();        
+    });
+    gui.add(controls,"camY",-100,100).onChange(function(){
+        controls.resetCamera();        
+    });
+    gui.add(controls,"camZ",-100,100).onChange(function(){
+        controls.resetCamera();        
+    });
+
+    gui.add(controls, "fov", 0,360).onChange(function(e){
+        cam.fov = e;
+        cam.updateProjectionMatrix();
+    });
+    gui.add(controls, "aspect", 0.1,2).onChange(function(e){
+        cam.aspect = e;
+        cam.updateProjectionMatrix();
+    });
+    gui.add(controls, "near", 0.01,100).onChange(function(e){
+        cam.near = e;
+        cam.updateProjectionMatrix();
+    });
+    gui.add(controls, "far", 10,1000).onChange(function(e){
+        cam.far = e;
+        cam.updateProjectionMatrix();
+    });  
+ */
+        
+
+    //let alpha = 0.3;
+    //const step = 0.03;
+    const clock = new THREE.Clock();
+    function myRender(){
+        const delta = clock.getDelta();
+        orbitControls.update(delta);
+        /* pointLight.visible = controls.activePointLight;
+        ambientLight.visible = controls.ambientLight;
+        alpha += step;
+        if (controls.rotateLight){
+        
+        pointLight.position.x = 20*Math.cos(alpha);
+        pointLight.position.z = 10*Math.sin(alpha);
+        
+        lightSphere.position.copy(pointLight.position);
+        }
+
+
+        if (controls.rotateSphere){
+        
+        sphere.position.x = 20*Math.sin(alpha);
+        sphere.position.y=25 -(sphere.position.x * sphere.position.x)/20;  
+            } */
+
+        //sphere.position.x = controls.positionX;
+        //sphere.position.y = controls.positionY;
+        //sphere.position.z = controls.positionZ;
+
+        requestAnimationFrame(myRender);
+        renderer.render(scene, cam);
+    }
+
+    myRender();
+    }  
+    init();
+</script>
+</body>
+</html>

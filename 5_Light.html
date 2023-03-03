@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <title>Module 6: Light</title>
+    <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+    <script src  = "thuvien/TrackballControls.js"></script>
+    <script src  = "thuvien/OrbitControls.js"></script>
+
+
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_SharedWithUsers msdt:dt="string">MI4332-20221 Members</mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_SharedWithUsers>
+<mso:SharedWithUsers msdt:dt="string">7;#MI4332-20221 Members</mso:SharedWithUsers>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+        cam.position.set(00, 10, -50);
+        cam.position.y = 50;
+        cam.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor(0x606060, 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        renderer.shadowMapEnabled = true;
+
+        window.addEventListener('resize', onResize, false);
+        function onResize(){
+            cam.aspect = window.innerWidth/window.innerHeight;
+            cam.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        //add a cube
+        let cubeGeom = new THREE.BoxGeometry(6, 6, 6);
+        let cubeColor = 0xea9b07;
+        let cubeMat = new THREE.MeshBasicMaterial({color: cubeColor});
+        cubeMat = new THREE.MeshLambertMaterial({color: cubeColor});
+
+        let cube = new THREE.Mesh(cubeGeom, cubeMat);
+        cube.position.y = 3;
+        cube.castShadow = true;
+        scene.add(cube);
+
+
+        //add a plane
+        let planeGeom = new THREE.PlaneGeometry(20, 100, 1, 1);
+        let planeColor = 0x565353;
+        let planeMat = new THREE.MeshPhongMaterial({color: planeColor});
+        let plane = new THREE.Mesh(planeGeom, planeMat);
+        plane.rotation.x = -Math.PI/2;
+        plane.rotation.z = -Math.PI/2;
+        plane.receiveShadow = true;
+        scene.add(plane);
+        plane.receiveShadow = true;
+
+        //add a sphere
+        let sphereGeom = new THREE.SphereGeometry(4, 20, 20);
+        let sphereMat = new THREE.MeshBasicMaterial({color: 0x00bb00});
+        sphereMat = new THREE.MeshLambertMaterial({color: 0x00bb00});
+        let sphere = new THREE.Mesh(sphereGeom, sphereMat);
+        sphere.castShadow = true;
+        sphere.position.x = 15;
+        sphere.position.y = 4;
+        scene.add(sphere);
+        sphere.castShadow = true;
+
+
+        let pointLight = new THREE.PointLight(0xcccccc,1,0);
+        pointLight.position.set(10, 20, 30);
+        //pointLight.target = scene.position;
+        pointLight.castShadow = true;
+        //scene.add(pointLight); 
+        
+        let ambientLight = new THREE.AmbientLight("#888");
+        scene.add(ambientLight);
+
+        let helper = new THREE.PointLightHelper(pointLight);
+        //scene.add(helper); 
+
+        const lightSphereGeom = new THREE.SphereGeometry(0.3);
+        const lightSphereMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff
+        });
+        const lightSphere = new THREE.Mesh(lightSphereGeom,lightSphereMat);
+        //scene.add(lightSphere);
+        //lightSphere.position.copy(pointLight.position);      
+
+        let spotColor = new THREE.Color();
+        let spotLight = new THREE.DirectionalLight(spotColor);
+        spotLight.position.set(-30, 40, -30);
+        spotLight.target = scene;
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+        
+        
+
+        spotLight.shadow.camera.near = 10;
+        spotLight.shadow.camera.far = 100;
+        spotLight.shadow.camera.left = -20;
+        spotLight.shadow.camera.right = 20;
+        spotLight.shadow.camera.top = 20;
+        spotLight.shadow.camera.bottom = -20;
+        spotLight.shadow.mapSize.witch = 240;
+        spotLight.shadow.mapSize.height = 240;
+
+        let spotLightHelper = new THREE.DirectionalLightHelper(spotLight,spotColor);
+        scene.add(spotLightHelper);
+        
+        const dirCamera = new THREE.CameraHelper(spotLight.shadow.camera);
+        scene.add(dirCamera);
+
+        //const dirHelper = new THREE.DirectionalLight()
+
+        let trackballControls = new THREE.TrackballControls(cam, renderer.domElement);
+        let orbitControls = new THREE.OrbitControls(cam, renderer.domElement);
+
+        let controls = new function(){
+            //this.positionX = sphere.position.x;
+            this.positionY = sphere.position.y;
+            //this.positionZ = sphere.position.z; 
+            
+            this.cubeColor= "#ea9b07";
+            this.rotateLight = true;
+            this.radius = 4;
+            this.sphereColor = 0x00bb00;
+            this.rotateSphere = true;
+            this.target = "Plane";
+
+            this.color = 0xcccccc;
+            this.intensity = 1;
+            this.distance = 100;
+            
+            this.spotcolor = 0xcccccc;
+            this.spotintensity = 1;
+            this.spotdistance = 100;
+            this.angle = 0.3;
+            this.penumbra = 0;
+
+            this.positionX = spotLight.position.x;
+            this.positionY = spotLight.position.y;
+            this.positionZ = spotLight.position.z;
+
+            /* this.autoRotate = 1.0;
+            this.autoRotateSpeed = 2.0;
+            this.enabled = false;
+            this.maxDistance = 50.0;
+            this.minDistance = 25.0;
+
+            this.maxAzimuthAngle = Infinity;
+            this.minAzimuthAngle = Infinity;
+
+            this.maxPolarAngle = Math.PI;
+            this.minPolarAngle = 0;
+
+            this.enableDamping = false;
+            this.dampingFactor = 0.2;
+             */
+
+            this.shadowcameranear = 1;
+            this.shadowcamerafar = 100;
+            this.shadowcameravisible = 0.5;
+
+            this.activePointLight = true;
+            this.activeAmbientLight = true;
+            this.activeSpotLight = true;
+            
+        }
+        const gui = new dat.GUI();
+        const spotlightGUI = gui.addFolder("SpotLight");
+        spotlightGUI.addColor(controls,"spotcolor").onChange(function(e){
+        const c = new THREE.Color(e);
+        spotLight.color = c;
+        })      
+        spotlightGUI.add(controls,"spotintensity",0,50).onChange(function(e){
+        spotLight.intensity = e;
+        })    
+        spotlightGUI.add(controls,"spotdistance",0,1000).onChange(function(e){
+        
+        spotLight.distance = e;
+        }) 
+        spotlightGUI.add(controls,"angle",0,Math.PI).onChange(function(e){
+        
+        spotLight.angle = e;
+        }) 
+        spotlightGUI.add(controls,"penumbra",0,1).onChange(function(e){
+        
+        spotLight.penumbra = e;
+        })
+
+        //spotlightGUI.add(controls, "positionX", -50, 50);
+        //spotlightGUI.add(controls, "positionY", 2, 30);
+        //spotlightGUI.add(controls, "positionZ", -50, 50);
+
+        /* const lightGUI = gui.addFolder("Lights");
+        lightGUI.addColor(controls,"color").onChange(function(e){
+        const c = new THREE.Color(e);
+        pointLight.color = c;
+        })      
+        lightGUI.add(controls,"intensity",0,5).onChange(function(e){
+        
+        pointLight.intensity = e;
+        })    
+        lightGUI.add(controls,"distance",0,1000).onChange(function(e){
+        
+        pointLight.distance = e;
+        })    */
+        
+        /* gui.add(controls, "autoRotate", 0, 10).onChange(function(e){
+        orbitControls.autoRotateSpeed = e;
+        });
+        gui.add(controls, "autoRotateSpeed", 0, 10).onChange(function(e){
+            orbitControls.autoRotateSpeed = e;
+        });
+        gui.add(controls, "maxDistance", 1, 100).onChange(function(e){
+            orbitControls.maxDistance = e;
+        });
+        gui.add(controls, "minDistance", 1, 50).onChange(function(e){
+            orbitControls.minDistance = e;
+        });
+        gui.add(controls, "enabled", true, false).onChange(function(e){
+            orbitControls.enabled = e;
+        });
+        gui.add(controls, "maxAzimuthAngle", 0, 2*Math.PI).onChange(function(e){
+        orbitControls.maxAzimuthAngle = e;
+        });
+        gui.add(controls, "minAzimuthAngle", 0, 2*Math.PI).onChange(function(e){
+            orbitControls.minAzimuthAngle = e;
+        });
+        gui.add(controls, "maxPolarAngle", 0, Math.PI).onChange(function(e){
+            orbitControls.maxPolarAngle = e;
+        });
+        gui.add(controls, "minPolarAngle", 0, Math.PI).onChange(function(e){
+            orbitControls.minPolarAngle = e;
+        });
+        gui.add(controls, "enableDamping", true, false).onChange(function(e){
+            orbitControls.enableDamping = e;
+        });
+        gui.add(controls, "dampingFactor", 0, 2.0).onChange(function(e){
+            orbitControls.dampingFactor = e;
+        }); */
+        spotlightGUI.add(controls, 'target', ['Plane', 'Sphere', 'Cube']).onChange(function (e) {
+            console.log(e);
+            switch (e) {
+                case "Plane":
+                    spotLight.target = plane;
+                    
+                    break;
+                case "Sphere":
+                    spotLight.target = sphere;
+                  
+                    break;
+                case "Cube":
+                    spotLight.target = cube;
+                
+                    
+                    break;
+            }
+
+        });
+        gui.add(controls,"activePointLight",true,false);
+        gui.add(controls,"activeAmbientLight",true,false);
+        gui.add(controls,"activeSpotLight",true,false);
+        gui.add(controls,"rotateLight",true,false);
+        gui.add(controls,"rotateSphere",true,false);
+        //gui.add(controls,"positionX",-50,50);
+        gui.add(controls,"positionY",2,80);
+        //gui.add(controls,"positionZ",-30,30); 
+
+        gui.add(controls,"radius",1,50).onChange(function(e){
+            scene.remove(sphere);
+            sphereGeom = new THREE.SphereGeometry(e,20,20);
+        
+            sphere = new THREE.Mesh(sphereGeom,sphereMat);
+            scene.add(sphere);
+        })
+
+        let cubeControls = gui.addFolder("Cube");
+        cubeControls.addColor(controls,"cubeColor").onChange(function(e){
+         const color = new THREE.Color(e);
+         cube.material.color = color;
+        });
+
+        let sphereControls = gui.addFolder("Sphere");
+        sphereControls.addColor(controls,"sphereColor").onChange(function(e){
+         const color = new THREE.Color(e);
+         sphere.material.color = color;
+        });
+ 
+//
+    let alpha = 0.01;
+    const step = 0.01;
+    const clock = new THREE.Clock();
+    function myRender(){
+
+        const delta = clock.getDelta();
+        orbitControls.update(delta);
+        spotLightHelper.update();
+        pointLight.visible = controls.activePointLight;
+        ambientLight.visible = controls.activeAmbientLight;
+        spotLight.visible = controls.activeSpotLight;
+        alpha += step;
+
+        //spotLight.position.x = controls.positionX;
+        spotLight.position.y = controls.positionY;
+        //spotLight.position.z = controls.positionZ;
+
+        if (controls.rotateLight){
+        
+            pointLight.position.x = 20*Math.cos(alpha);
+            pointLight.position.z = 10*Math.sin(alpha);
+            
+            lightSphere.position.copy(pointLight.position);
+
+            spotLight.position.x = 20*Math.cos(alpha);
+            spotLight.position.z = 10*Math.sin(alpha);
+            
+            spotLightHelper.position.copy(spotLight.position)
+        } 
+
+        if (controls.rotateSphere){ 
+            sphere.position.x = 20*Math.sin(alpha);
+            sphere.position.y=25 -(sphere.position.x * sphere.position.x)/20;  
+        } 
+
+        
+ 
+        requestAnimationFrame(myRender);
+        renderer.render(scene, cam);
+    }
+
+    myRender();
+
+        // renderer.render(scene, cam);
+    }  
+    init();
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+    <meta charset="UTF-8">
+    <title>Module 1: Intro</title>
+    <script src  = "thuvien/three.js"></script>
+    <script src  = "thuvien/dat.gui.js"></script>
+    <script src  = "thuvien/TrackballControls.js"></script>
+    <script src  = "thuvien/OrbitControls.js"></script>
+    <script src  = "thuvien/EXRLoader.js"></script>
+    <script src  = "thuvien/RGBELoader.js"></script>
+
+
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_SharedWithUsers msdt:dt="string">MI4332-20221 Members</mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_SharedWithUsers>
+<mso:SharedWithUsers msdt:dt="string">7;#MI4332-20221 Members</mso:SharedWithUsers>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+<div id = "screen"></div>
+<script>
+    function init(){
+        const scene = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+        cam.position.set(0, 30, 50);
+        cam.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor("#404040", 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.querySelector("#screen").appendChild(renderer.domElement);
+        //renderer.shadowMapEnabled = true;
+
+        const textureLoader = new THREE.RGBELoader();
+        
+        let url = "newport.hdr";
+        let texture = textureLoader.load(url);
+        texture.encoding = THREE.RGBEEncoding;
+        //const url1 = "1.jpg"
+        let texture1 = textureLoader.load(url);
+        texture1.encoding = THREE.RGBEEncoding;
+        texture1.flipY = true;
+        const s = 10;
+        //add a cube
+        let cubeGeom = new THREE.BoxGeometry(s, s, s);
+        let cubeMat = new THREE.MeshPhongMaterial({ map: texture});
+        let cube = new THREE.Mesh(cubeGeom, cubeMat);
+        cube.position.set(-s/2 - 1,10,10);
+        //cube.castShadow = true;
+        scene.add(cube);
+
+        
+        let cubeMat1 = new THREE.MeshPhongMaterial({ map: texture1});
+        let cube1 = new THREE.Mesh(cubeGeom, cubeMat1);
+        cube1.position.set(s/2 + 1,10,10);
+        //cube.castShadow = true;
+        scene.add(cube1);
+
+
+
+        //add a plane
+        let planeGeom = new THREE.PlaneGeometry(30, 60, 1, 1);
+        let planeColor = "#A0A0A0";
+        let planeMat = new THREE.MeshPhongMaterial({map: new THREE.TextureLoader().load("fileanh/1.jpg")});
+        let plane = new THREE.Mesh(planeGeom, planeMat);
+        plane.rotation.x = -Math.PI/2;
+        plane.rotation.z = -Math.PI/2;
+        //plane.receiveShadow = true;
+        scene.add(plane);
+
+
+
+        //add a sphere
+        let sphereGeom = new THREE.SphereGeometry(6, 20, 20);
+        let sphereMat = new THREE.MeshBasicMaterial({color: 0x00bb00});
+        sphereMat = new THREE.MeshPhongMaterial({
+            map: texture
+        });
+        let sphere = new THREE.Mesh(sphereGeom, sphereMat);
+        sphere.position.set(0,6,0)
+        //scene.add(sphere);
+
+        let torusknotGeom = new THREE.TorusKnotGeometry(6,2,24,160,2,3)
+        let torusknotMat =  new THREE.MeshLambertMaterial({ 
+            map: texture
+        });
+        let torusknot = new THREE.Mesh(torusknotGeom, torusknotMat);
+        //torusknot.rotateX(Math.PI/6);
+        //torusknot.rotateY(Math.PI/6);
+        //scene.add(torusknot);
+        torusknot.position.set(30, 10, 0);
+
+        //den chieu sang
+        const pointLight = new THREE.PointLight(0xffffff);
+        pointLight.position.set(0, 30, 10);
+        //pointLight.castShadow = true;
+        //scene.add(pointLight);
+
+        let ambientLight = new THREE.AmbientLight("#888");
+        scene.add(ambientLight);
+
+        let helper = new THREE.PointLightHelper(pointLight);
+        //scene.add(helper);
+
+        let orbitControls = new THREE.OrbitControls(cam, renderer.domElement);
+
+        //giao dien
+        let controls = new function(){
+            this.toneMapping = 0;
+            this.exposure = 1;
+            this.whitePoint = 1;
+        }
+        const gui = new dat.GUI();
+        gui.add(controls, "toneMapping", {"Linear":0, "Notone":1, "Reinhard":2 , "Uncharted2":3, "Cineon":4}).onChange(function(e){
+            switch(parseInt(e)){
+                case 0:
+                    renderer.toneMapping = THREE.LinearToneMapping;
+                    break;
+                case 1:
+                    renderer.toneMapping = THREE.NoToneMapping;
+                    break;
+                case 2:
+                    renderer.toneMapping = THREE.ReinhardToneMapping;
+                    break;
+                case 3:
+                    renderer.toneMapping = THREE.Uncharted2ToneMapping;
+                    break;
+                case 4:
+                    renderer.toneMapping = THREE.CineonToneMapping;
+                    break;
+            }
+            cubeMat.needsUpdate = true;
+        })
+
+        gui.add(controls, "exposure", 0, 10).onChange(function(e){
+            renderer.toneMappingExposure = e;
+        })
+
+        gui.add(controls, "whitePoint", 0, 50).onChange(function(e){
+            renderer.toneMappingWhitePoint = e;
+        })
+        
+        //ve hinh
+        const clock = new THREE.Clock();
+        function myRender(){
+            const delta = clock.getDelta();
+            orbitControls.update(delta);
+
+            window.requestAnimationFrame(myRender);
+            renderer.render(scene, cam);
+        }
+        myRender();
+    }
+    init();
+</script>
+</body>
+</html>
