@@ -1,0 +1,75 @@
+\section{kỹ thuật sử dụng}
+Sử dụng thư viện \textbf{dat.gui.js} để thay đổi khung cảnh xung quanh
+\subsection{Điều chỉnh khung hình}
+Sản phẩm này gồm có 2 khung cảnh :
+\begin{itemize}
+    \item Ngoài trời
+    \item Trong nhà
+\end{itemize}
+Vì thế khi thay đổi cảnh thì cần phải set lại camera.
+\begin{lstlisting}[language = java]
+ gui.add(controls, "switchCamera", {"out":0, "in":1}).onChange(function(e){
+            switch (parseInt(e)){
+                case 0: 
+                    cam.position.set(0, 20, 110);
+                    //cam.lookAt(scene.position);
+                    break;
+                case 1: 
+                    cam.reset();
+                    cam = cam1;
+                    //cam.lookAt(scene1.position);
+                    break;
+            }
+        });
+\end{lstlisting}
+
+Để dễ hơn trong việc lập trình, ở đây có sử dụng 2 camera và 2 scene khác nhau nên việc điều chỉnh camera ảnh hưởng đến scene. Khi đó ta cũng cần cập nhật lại scene ở phần \textbf{myRender} như sau:
+\begin{lstlisting}[language = java]
+if (controls.switchCamera == 0){
+            renderer.render(scene, cam);
+        }else{
+            renderer.render(scene1, cam1);
+        } 
+\end{lstlisting}
+
+Lúc này ta có thể lựa dễ dàng chọn khung hình mà mình muốn.
+
+\subsection{Điều chỉnh background}
+Với khung cảnh ngoài trời thì sẽ có 2 lựa chọn là ban ngày hoặc ban đêm vì thế nếu muốn thay đổi chúng ta cần:
+\begin{itemize}
+    \item Thay đổi texture của nền trời
+    \item Thay đổi các loại màu đèn 
+\end{itemize}
+\begin{lstlisting}[language = java]
+ gui.add(controls, "display", {"bright":0, "dark":1}).setValue(0).onChange(function(e){
+            switch (parseInt(e)){
+                case 0:
+                    url_troi = textureLoader.load("btl/sky4.jpg");
+                    sphereMat1.map = url_troi;
+                    scene.remove(pointLight_dark);
+                    scene.remove(ambientLight_dark);
+                    scene.add(ambientLight);
+                    scene.add(pointLight); 
+                    break;
+                case 1: 
+                    url_troi = textureLoader.load("btl/star1.jpg");
+                    sphereMat1.map = url_troi;
+                    scene.remove(pointLight);
+                    scene.remove(ambientLight);
+                    scene.add(ambientLight_dark);
+                    scene.add(pointLight_dark);
+                    break;
+            }
+        });
+\end{lstlisting}
+
+\newpage
+\section{Hướng phát triển sản phẩm}
+Với mong muốn hoàn thiện sản phẩm này tốt hơn nữa thì nhóm chúng em có đề ra một số bước phát triển thêm như sau:
+\begin{itemize}
+    \item Liên kết 2 khung cảnh với nhau thông qua việc ấn vào cánh cửa của ngôi nhà
+    \item Cải thiện phần khung nhà ở phần trong nhà tương ứng với ngôi nhà bên ngoài hơn.
+    \item Thiết kế giao diện đẹp mắt hơn
+    \item ...
+
+\end{itemize}
